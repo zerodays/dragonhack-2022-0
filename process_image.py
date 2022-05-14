@@ -10,21 +10,16 @@ import cv2
 import numpy as np
 from base64 import b64decode
 import matplotlib.pyplot as plt
+from python_audio import read_sequence
+from python_audio import process_sequence
 
-def process_image(message):
-    buf = BytesIO()
-    buf.write(message)
+tla = read_sequence.read_sequence("tla").__next__()
 
-    im = Image.open(buf)
-    open_cv_image = np.array(im)[:, :, 0]
-    
-    cv2.imshow('image', open_cv_image)
-    # TODO
-
-
+sounds = process_sequence.read_sounds()
 
 while True:
-    message = input()
+    message = input()        
+    
     if message.startswith('|||'):
 
         try:
@@ -32,7 +27,13 @@ while True:
         except BrokenPipeError:
             continue
 
-        process_image(message)
+        image = read_sequence.read_image(message)
+
+        (x, y), freq = process_sequence.process_frame(image, tla)
+        if freq > 0:
+            s = sounds[y][x].play()
+            time.sleep(0.01)
+
         k = cv2.waitKey(10) & 0XFF
 
 cv2.destroyAllWindows()
