@@ -29,7 +29,7 @@ def process_frame(img, H_REGIONS=5, V_REGIONS=3):
     img_size = img.shape[:2]
 
     cv2.imshow('image', img)
-    k = cv2.waitKey()
+    k = cv2.waitKey(10)
 
     n_regions_h = int(img_size[1] // H_REGIONS)
     n_regions_v = int(img_size[0] // V_REGIONS)
@@ -38,16 +38,23 @@ def process_frame(img, H_REGIONS=5, V_REGIONS=3):
     regions_y = []
 
     for hi in range(H_REGIONS):
-        region = img[hi * n_regions_h: (hi + 1) * n_regions_h, :]
+        region = img[:, hi * n_regions_h: (hi + 1) * n_regions_h]
+        # print(f"region1: {region.shape}")
         mean = np.mean(region) / 255
         regions_x.append(mean)
 
     for vi in range(V_REGIONS):
-        region = img[:, vi * n_regions_v: (vi + 1) * n_regions_v]
+        region = img[vi * n_regions_v: (vi + 1) * n_regions_v, :]
+        # print(f"region2: {region.shape}")
         mean = np.mean(region) / 255
         regions_y.append(mean)
 
     x, y = np.argmin(regions_x), np.argmin(regions_y)
+
+    # print(f"x: {x}, y: {y}")
+
+    # print(f"Regions_X: {regions_x}")
+    # print(f"Regions_y: {regions_y}")
 
     freq = round(5 / max(min(regions_x[x], regions_y[y]), 0.5))
 
@@ -56,6 +63,8 @@ def process_frame(img, H_REGIONS=5, V_REGIONS=3):
 
 sounds = read_sounds()
 sequence = read_sequence()
+
+print(f"Sequence length: {len(sequence)}")
 
 for frame in sequence:
     (x, y), freq = process_frame(frame)

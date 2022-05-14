@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 from base64 import b64decode
-from email import message
-from msilib import sequence
-import queue
-import time
 
 from PIL import Image, ImageOps
 from io import BytesIO
-import cv2
 import numpy as np
 from base64 import b64decode
-import sys
 
 
 def read_image(message):
@@ -22,8 +16,6 @@ def read_image(message):
     pil_image = ImageOps.grayscale(im)
     open_cv_image = np.array(pil_image)
 
-    # cv2.imshow('image', open_cv_image)
-    # k = cv2.waitKey()
     return open_cv_image
 
 def read_sequence():
@@ -37,7 +29,3 @@ def read_sequence():
                 sequence.append(img)
 
     return sequence
-
-read_sequence()
-
-# cv2.destroyAllWindows()
