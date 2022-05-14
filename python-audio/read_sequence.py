@@ -13,19 +13,17 @@ def read_image(message):
     buf.write(message)
 
     im = Image.open(buf)
-    pil_image = ImageOps.grayscale(im)
-    open_cv_image = np.array(pil_image)
+    open_cv_image = np.array(im)[:,:,0]
+
+    # open_cv_image = open_cv_image[:,::-1]
 
     return open_cv_image
 
-def read_sequence():
-    sequence = []
-    with open('test') as f:
+def read_sequence(path):
+    with open(path) as f:
         lines = f.readlines()
         for message in lines:
             if message.startswith('|||'):
                 message = b64decode(message.encode('utf-8'))
                 img = read_image(message)
-                sequence.append(img)
-
-    return sequence
+                yield img

@@ -7,6 +7,8 @@ from read_sequence import read_sequence
 
 import simpleaudio as sa
 
+THRESHOLD = 0.95
+
 def read_sounds():
     folder = "./sounds"
     tags_vertical = ["low", "mid", "high"]
@@ -25,11 +27,14 @@ def read_sounds():
     return sounds
 
 
-def process_frame(img, H_REGIONS=5, V_REGIONS=3):
+def process_frame(img,tla, H_REGIONS=10, V_REGIONS=10):
+    img = -img.astype(int) + tla.astype(int)
     img_size = img.shape[:2]
 
-    cv2.imshow('image', img)
-    k = cv2.waitKey(10)
+    img_displ = np.zeros(img.shape)
+    img_displ[img > 0] = img[img > 0]
+    cv2.imshow('image', img_displ.astype(np.uint8))
+    k = cv2.waitKey(50)
 
     n_regions_h = int(img_size[1] // H_REGIONS)
     n_regions_v = int(img_size[0] // V_REGIONS)
@@ -55,18 +60,24 @@ def process_frame(img, H_REGIONS=5, V_REGIONS=3):
 
     # print(f"Regions_X: {regions_x}")
     # print(f"Regions_y: {regions_y}")
+    white_confidence = min(regions_x[x], regions_y[y])
 
-    freq = round(5 / max(min(regions_x[x], regions_y[y]), 0.5))
+    # if no obstacles, we return 0
+    if white_confidence > THRESHOLD:
+        return (0,0), 0    
+    freq = round(5 / max(white_confidence, 0.5))
 
-    return (x, y), freq
+    return (x*5//H_REGIONS, y*3//V_REGIONS), freq
     
 
 sounds = read_sounds()
-sequence = read_sequence()
+sequence = read_sequence("sprehod")
 
-print(f"Sequence length: {len(sequence)}")
+tla = read_sequence("../tla").__next__()
+
 
 for frame in sequence:
-    (x, y), freq = process_frame(frame)
-    s = sounds[y][x].play()
-    time.sleep(1 / freq)
+    (x, y), freq = process_frame(frame, tla)
+    if freq > 0:
+        s = sounds[y][x].play()
+        time.sleep(0.01)
