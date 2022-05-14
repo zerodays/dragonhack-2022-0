@@ -1,0 +1,4 @@
+websockets
+pillow
+opencv-python
+numpy
