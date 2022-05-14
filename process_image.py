@@ -12,14 +12,15 @@ from base64 import b64decode
 import matplotlib.pyplot as plt
 
 def process_image(message):
-
     buf = BytesIO()
     buf.write(message)
 
     im = Image.open(buf)
-    open_cv_image = np.array(im)
+    open_cv_image = np.array(im)[:, :, 0]
+    
+    cv2.imshow('image', open_cv_image)
+    # TODO
 
-    cv2.imshow('image0', open_cv_image)
 
 
 while True:
