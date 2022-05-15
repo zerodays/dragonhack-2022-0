@@ -4,15 +4,15 @@ import cv2
 import os
 import time 
 from python_audio.read_sequence import read_sequence
-
+from scipy.ndimage.filters import gaussian_filter
 from pydub import AudioSegment
 
-THRESHOLD = 0.20
+THRESHOLD = 0.25
 
 def read_sounds():
     folder = "python_audio/sounds"
     tags_vertical = ["low", "mid", "high"]
-    tags_horizontal = ["30L", "15L", "C", "15R", "30R"]
+    tags_horizontal = ["50L", "25L", "C", "25R", "50R"]
 
     sounds = []
 
@@ -26,8 +26,37 @@ def read_sounds():
 
     return sounds
 
+def process_frame(img, tla):
+    img = img.astype(int) - tla.astype(int)
 
-def process_frame(img,tla, H_REGIONS=10, V_REGIONS=10):
+    img_displ = np.zeros(img.shape)
+    img_displ[img > 0] = img[img > 0]
+
+    blurred = gaussian_filter(img, sigma=7)
+
+    argmax = np.argmax(blurred)
+    peak = np.unravel_index(argmax, np.array(blurred).shape)
+    peak_value = blurred[peak[0], peak[1]] / 255
+
+    if not peak_value < THRESHOLD:
+        img_displ = cv2.circle(img_displ, peak[::-1], radius=5, color=(0, 0, 255), thickness=2)
+    
+    cv2.imshow('processed', img_displ.astype(np.uint8))
+    k = cv2.waitKey(10)
+
+    if peak_value < THRESHOLD:
+        return (0,0), 0
+
+    h, w = img.shape
+    x, y = peak[::-1]
+
+    h_region =  x * 5 // w
+    v_region = y * 3 // h
+
+    return (h_region, v_region), peak_value
+
+
+def process_frame_old(img,tla, H_REGIONS=10, V_REGIONS=10):
     img = img.astype(int) - tla.astype(int)
     img_size = img.shape[:2]
 
