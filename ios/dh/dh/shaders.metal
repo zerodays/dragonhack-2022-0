@@ -57,9 +57,9 @@ static half4 getJetColorsFromNormalizedVal(half val) {
     half4 res ;
     if(val <= 0.01h)
         return half4();
-    res.r = 1.5h - fabs(4.0h * val - 3.0h);
-    res.g = 1.5h - fabs(4.0h * val - 2.0h);
-    res.b = 1.5h - fabs(4.0h * val - 1.0h);
+    res.r = val;
+    res.g = 0.0h;
+    res.b = 0.0h;
     res.a = 1.0h;
     res = clamp(res,0.0h,1.0h);
     return res;
