@@ -9,8 +9,8 @@ const IP = 'ws://192.168.46.206:7000'
 
 const Home = () => {
   const [img, setImage] = useState()
-  const [ang, setAngle] = useState()
-  const [int, setIntensity] = useState()
+  const [ang, setAngle] = useState(0)
+  const [int, setIntensity] = useState(0)
 
   const {
     sendMessage,
@@ -19,18 +19,21 @@ const Home = () => {
     onMessage: (msg) => {
       const json = JSON.parse(msg.data)
       setImage(json.image)
-      setAngle(json.angle)
-      setIntensity(json.intesity)
+      // setAngle(json.angle)
+      // setIntensity(json.intesity)
       console.log(ang)
     },
     shouldReconnect: (closeEvent) => true,
   });
 
   useEffect(() => {
-    console.log('useEffect')
+    // console.log('useEffect')
     setInterval(() => {
       sendMessage('get')
-    }, 500)
+      // setAngle(ang + 0.1)
+      // setIntensity(int + 0.1)
+      // console.log(ang)
+    }, 200)
   }, [])
 
   return (
@@ -58,9 +61,11 @@ const Home = () => {
           sx={{
             width: '700px',
             height: '700px',
-            transform: `translate(-50%, -50%) rotate(${ang}rad)`,
-            background: `radial-gradient(circle, rgba(0, 0, 0, 0.555) 0%, rgba(0, 212, 255, 0) ${int * 10}}%)`,
-          }}>
+            // transform: `translate(-50%, -50%) rotate(${ang}rad)`,
+            // background: `radial-gradient(circle, rgba(0, 0, 0, 0.555) 0%, rgba(0, 212, 255, 0) ${int * 10}}%)`,
+          }}
+          style={{ transform: `translate(-50%, -50%) rotate(${ang}rad)`, background: `radial-gradient(circle, rgba(0, 0, 0, 0.555) 0%, rgba(0, 212, 255, 0) ${int * 20}%)` }}
+        >
           <Image
             src='/pointer_shadow.png'
             width='700px'
