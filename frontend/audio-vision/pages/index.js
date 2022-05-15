@@ -19,8 +19,8 @@ const Home = () => {
     onMessage: (msg) => {
       const json = JSON.parse(msg.data)
       setImage(json.image)
-      // setAngle(json.angle)
-      // setIntensity(json.intesity)
+      setAngle(json.angle)
+      setIntensity(json.intesity)
       console.log(ang)
     },
     shouldReconnect: (closeEvent) => true,
