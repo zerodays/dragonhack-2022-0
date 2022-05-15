@@ -52,6 +52,7 @@ a {
   top: 50%;
   transform: translate(-50%, -50%);
   /* animation: rot 5s infinite; */
+  transition: all 0.5s ease-in;
   background: radial-gradient(circle, rgba(0, 0, 0, 0.555) 0%, rgba(0, 212, 255, 0) 70%);
   /* background-color: #0099ff; */
 }

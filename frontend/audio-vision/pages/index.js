@@ -27,9 +27,10 @@ const Home = () => {
   });
 
   useEffect(() => {
+    console.log('useEffect')
     setInterval(() => {
       sendMessage('get')
-    }, 200)
+    }, 500)
   }, [])
 
   return (
@@ -52,7 +53,7 @@ const Home = () => {
         </Toolbar>
       </Box>
       <Container maxWidth="sm" sx={{ position: 'relative', height: 'calc(100% - 64px)' }}>
-        <Box className="pointer" sx={{ width: '700px', height: '700px' }} style={{ transform: `translate(-50%, -50%) rotate(${ang})`, }}>
+        <Box className="pointer" sx={{ width: '700px', height: '700px', transform: `translate(-50%, -50%) rotate(${ang}rad)` }}>
           <Image
             src='/pointer_shadow.png'
             width='700px'
