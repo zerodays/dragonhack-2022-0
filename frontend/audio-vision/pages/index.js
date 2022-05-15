@@ -27,9 +27,10 @@ const Home = () => {
   });
 
   useEffect(() => {
+    console.log('useEffect')
     setInterval(() => {
       sendMessage('get')
-    }, 200)
+    }, 500)
   }, [])
 
   return (
@@ -52,7 +53,14 @@ const Home = () => {
         </Toolbar>
       </Box>
       <Container maxWidth="sm" sx={{ position: 'relative', height: 'calc(100% - 64px)' }}>
-        <Box className="pointer" sx={{ width: '700px', height: '700px' }} style={{ transform: `translate(-50%, -50%) rotate(${ang})`, }}>
+        <Box
+          className="pointer"
+          sx={{
+            width: '700px',
+            height: '700px',
+            transform: `translate(-50%, -50%) rotate(${ang}rad)`,
+            background: `radial-gradient(circle, rgba(0, 0, 0, 0.555) 0%, rgba(0, 212, 255, 0) ${int * 10}}%)`,
+          }}>
           <Image
             src='/pointer_shadow.png'
             width='700px'
@@ -60,12 +68,19 @@ const Home = () => {
           />
         </Box>
         <Box className="circle" sx={{ width: '500px', height: '500px', borderRadius: '50%' }}>
-          <img
-            src={`data:image/jpeg;base64, ${img ?? 'mrs'}`}
-            width='480px'
-            height='480px'
-            style={{ borderRadius: '50%', }}
-          />
+          {img ? (
+            <img
+              src={`data:image/jpeg;base64, ${img ?? 'mrs'}`}
+              width='480px'
+              height='480px'
+              style={{ borderRadius: '50%', }}
+            />) : (<Box className='plain-circle' width='480px' height='480px' >
+              <Typography variant="h6" component="div" sx={{ textAlign: 'center', color: "white" }}>
+                WAITING FOR CONNECTION
+              </Typography>
+            </Box>)
+          }
+
         </Box>
         {/* <Typography variant="h6" component="div" sx={{ position: 'absolute', textAlign: 'center', color: "white", bottom: 40, right: 0, left: 0 }}>
           {conn}

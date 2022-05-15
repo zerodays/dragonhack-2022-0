@@ -12,7 +12,7 @@ struct ContentView: View {
     var socket: WebSocket
 
     init() {
-        var request = URLRequest(url: URL(string: "http://88.200.36.69:6969")!)
+        var request = URLRequest(url: URL(string: "http://88.200.88.177:6969")!)
         request.timeoutInterval = 5
         socket = WebSocket(request: request)
         socket.connect()
