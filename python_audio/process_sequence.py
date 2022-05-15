@@ -45,7 +45,7 @@ def process_frame(img, tla):
     k = cv2.waitKey(10)
 
     if peak_value < THRESHOLD:
-        return (0,0), 0
+        return (0,0), 0, img_displ, (0, 0)
 
     h, w = img.shape
     x, y = peak[::-1]
@@ -53,7 +53,7 @@ def process_frame(img, tla):
     h_region =  x * 5 // w
     v_region = y * 3 // h
 
-    return (h_region, v_region), peak_value
+    return (h_region, v_region), peak_value, img_displ, (x, y)
 
 
 def process_frame_old(img,tla, H_REGIONS=10, V_REGIONS=10):
