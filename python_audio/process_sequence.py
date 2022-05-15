@@ -5,14 +5,14 @@ import os
 import time 
 from python_audio.read_sequence import read_sequence
 
-import simpleaudio as sa
+from pydub import AudioSegment
 
 THRESHOLD = 0.20
 
 def read_sounds():
     folder = "python_audio/sounds"
     tags_vertical = ["low", "mid", "high"]
-    tags_horizontal = ["50L", "25L", "C", "25R", "50R"]
+    tags_horizontal = ["30L", "15L", "C", "15R", "30R"]
 
     sounds = []
 
@@ -20,7 +20,7 @@ def read_sounds():
         row = []
         for htag in tags_horizontal:
             path = os.path.join(folder, "beep_" + vtag + "_" + htag + ".wav")
-            wave_obj = sa.WaveObject.from_wave_file(path)
+            wave_obj = AudioSegment.from_wav(path)
             row.append(wave_obj)
         sounds.append(row)
 
@@ -65,9 +65,9 @@ def process_frame(img,tla, H_REGIONS=10, V_REGIONS=10):
     # if no obstacles, we return 0
     if white_confidence < THRESHOLD:
         return (0,0), 0    
-    freq = round(5 / max(white_confidence, 0.5))
+    # freq = round(5 / max(white_confidence, 0.5))
 
-    return (x*5//H_REGIONS, y*3//V_REGIONS), freq
+    return (x*5//H_REGIONS, y*3//V_REGIONS), white_confidence
     
 
 if __name__ == '__main__':
