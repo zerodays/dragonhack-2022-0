@@ -1,34 +1,68 @@
 #!/usr/bin/env python
 from base64 import b64decode
 from email import message
+import json
+import mimetypes
 import queue
 import time
-
+from base64 import b64encode
 from PIL import Image
 from io import BytesIO
 import cv2
 import numpy as np
 from base64 import b64decode
+import matplotlib.pyplot as plt
+from python_audio import read_sequence
+from python_audio import process_sequence
+from pydub.playback import play
+from threading import Thread
+from math import atan2
+from io import BytesIO
 
+tla = read_sequence.read_sequence("tla").__next__()
 
-def process_image(message):
-
-    buf = BytesIO()
-    buf.write(message)
-
-    im = Image.open(buf)
-    pil_image = im.convert('RGB') 
-    open_cv_image = np.array(pil_image) 
-    # Convert RGB to BGR 
-    open_cv_image = open_cv_image[:, :, ::-1].copy()
-
-    cv2.imshow('image', open_cv_image)
+sounds = process_sequence.read_sounds()
 
 while True:
-    message = input()
+    message = input()    
+    
     if message.startswith('|||'):
-        message = b64decode(message.encode('utf-8'))
-        process_image(message)
-        k = cv2.waitKey(10) & 0XFF
+
+        try:
+            message = b64decode(message.encode('utf-8'))
+        except BrokenPipeError:
+            continue
+
+        image = read_sequence.read_image(message)
+
+        (x, y), white_confidence, img_displ, peak = process_sequence.process_frame(image, tla)
+        white_confidence -= 0.2
+        white_confidence *= 1/0.7
+        white_confidence = max(0, min(1, white_confidence))
+        za_utisat = (1 - white_confidence) * 20
+
+        if white_confidence > 0:
+            s = sounds[y][x]
+            s -= za_utisat
+            Thread(target=lambda: play(s)).start()
+            time.sleep(0.01)
+
+        px, py = peak
+        px -= image.shape[1] // 2
+        py -= image.shape[0] // 2
+
+
+        # Message for server
+        buffered = BytesIO()
+        Image.fromarray(img_displ).convert('L').save(buffered, format="png")
+        img_str = b64encode(buffered.getvalue())
+        message = json.dumps({
+            'image': img_str.decode('utf-8'),
+            'angle': atan2(y, x),
+            'intensity': white_confidence
+        })
+
+        print('|||', b64encode(message.encode('utf-8')).decode('utf-8'))
+
 
 cv2.destroyAllWindows()

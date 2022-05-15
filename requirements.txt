@@ -2,3 +2,6 @@ websockets
 pillow
 opencv-python
 numpy
+matplotlib
+pydub
+scipy
