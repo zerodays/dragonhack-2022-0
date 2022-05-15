@@ -20,7 +20,7 @@ async def receive(websocket):
             await websocket.send(data)
 
 async def server():
-    async with serve(receive, "0.0.0.0", 7000):
+    async with serve(receive, "0.0.0.0", 6968):
         await asyncio.Future()  # run forever
 
 async def main():

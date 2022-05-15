@@ -9,6 +9,12 @@ from pydub import AudioSegment
 
 THRESHOLD = 0.25
 
+THRESHOLD_STAIRS = 0.3
+
+def get_stairs_sound():
+    folder = "python_audio/sounds"
+    return AudioSegment.from_wav(os.path.join(folder, "stairs.wav"))
+
 def read_sounds():
     folder = "python_audio/sounds"
     tags_vertical = ["low", "mid", "high"]
@@ -32,11 +38,28 @@ def process_frame(img, tla):
     img_displ = np.zeros(img.shape)
     img_displ[img > 0] = img[img > 0]
 
+    img_negative = np.zeros(img.shape)
+    img_negative[img < 0] = img[img < 0]
+    img_negative = np.absolute(img_negative)
+
     blurred = gaussian_filter(img, sigma=7)
 
     argmax = np.argmax(blurred)
     peak = np.unravel_index(argmax, np.array(blurred).shape)
     peak_value = blurred[peak[0], peak[1]] / 255
+
+    # get lowest point (possibly stairs)
+    argmin = np.argmin(blurred)
+    valley = np.unravel_index(argmin, np.array(blurred).shape)
+    valley_value = abs(blurred[valley[0], valley[1]]) / 255
+
+
+    if not valley_value < THRESHOLD:
+        img_negative = cv2.circle(img_negative, valley[::-1], radius=5, color=(0, 0, 255), thickness=2)
+    
+    cv2.imshow('processed', img_negative.astype(np.uint8))
+    k = cv2.waitKey(10)
+
 
     if not peak_value < THRESHOLD:
         img_displ = cv2.circle(img_displ, peak[::-1], radius=5, color=(0, 0, 255), thickness=2)
@@ -44,8 +67,12 @@ def process_frame(img, tla):
     cv2.imshow('processed', img_displ.astype(np.uint8))
     k = cv2.waitKey(10)
 
-    if peak_value < THRESHOLD:
-        return (0,0), 0, img_displ, (0, 0)
+    if peak_value < THRESHOLD and valley_value < THRESHOLD_STAIRS:
+        return (0,0), 0, img_displ, (0, 0), 0
+    
+    x_valley, y_valley = valley[::-1]
+    if valley_value < THRESHOLD_STAIRS or y_valley < 0.5*img.shape[0]:
+        valley_value = 0
 
     h, w = img.shape
     x, y = peak[::-1]
@@ -53,7 +80,7 @@ def process_frame(img, tla):
     h_region =  x * 5 // w
     v_region = y * 3 // h
 
-    return (h_region, v_region), peak_value, img_displ, (x, y)
+    return (h_region, v_region), peak_value, img_displ, (x, y), valley_value
 
 
 def process_frame_old(img,tla, H_REGIONS=10, V_REGIONS=10):
