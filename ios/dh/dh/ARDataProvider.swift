@@ -11,6 +11,7 @@ import Combine
 import ARKit
 import Accelerate
 import MetalPerformanceShaders
+import Starscream
 
 // Wrap the `MTLTexture` protocol to reference outputs from ARKit.
 final class MetalTextureContent {
@@ -39,6 +40,8 @@ extension CVPixelBuffer {
 // to a Metal texture, optionally upscaling depth data using a guided filter,
 // and implements `ARDataReceiver` to respond to `onNewARData` events.
 final class ARProvider: ARDataReceiver {
+    var socket: WebSocket
+
     // Set the destination resolution for the upscaled algorithm.
     let upscaledWidth = 960
     let upscaledHeight = 760
@@ -142,12 +145,48 @@ final class ARProvider: ARDataReceiver {
             upscaledConfidence.texture = destConfTexture
             downscaledRGB.texture = colorRGBTextureDownscaled
 
+            var request = URLRequest(url: URL(string: "http://88.200.88.177:6969")!)
+            request.timeoutInterval = 5
+            socket = WebSocket(request: request)
+//            socket.connect()
+
             // Set the delegate for ARKit callbacks.
             arReceiver.delegate = self
 
         } catch {
             fatalError("Unexpected error: \(error).")
         }
+    }
+
+    func pixelValues(fromCGImage imageRef: CGImage?) -> [UInt8]? {
+        var width = 0
+        var height = 0
+        var pixelValues: [UInt8]?
+
+        if let imageRef = imageRef {
+            width = imageRef.width
+            height = imageRef.height
+            let bitsPerComponent = imageRef.bitsPerComponent
+            let bytesPerRow = imageRef.bytesPerRow
+            let totalBytes = height * bytesPerRow
+            let bitmapInfo = imageRef.bitmapInfo
+
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            var intensities = [UInt8](repeating: 0, count: totalBytes)
+
+            let contextRef = CGContext(data: &intensities,
+                    width: width,
+                    height: height,
+                    bitsPerComponent: bitsPerComponent,
+                    bytesPerRow: bytesPerRow,
+                    space: colorSpace,
+                    bitmapInfo: bitmapInfo.rawValue)
+            contextRef?.draw(imageRef, in: CGRect(x: 0.0, y: 0.0, width: CGFloat(width), height: CGFloat(height)))
+
+            pixelValues = intensities
+        }
+
+        return pixelValues
     }
 
     // Save a reference to the current AR data and process it.
@@ -167,9 +206,14 @@ final class ARProvider: ARDataReceiver {
             depthContent.texture = lastArData?.depthImage?.texture(withFormat: .r32Float, planeIndex: 0, addToCache: textureCache!)!
             confidenceContent.texture = lastArData?.confidenceImage?.texture(withFormat: .r8Unorm, planeIndex: 0, addToCache: textureCache!)!
         }
+
         if isToUpsampleDepth {
-            guard let cmdBuffer = commandQueue.makeCommandBuffer() else { return }
-            guard let computeEncoder = cmdBuffer.makeComputeCommandEncoder() else { return }
+            guard let cmdBuffer = commandQueue.makeCommandBuffer() else {
+                return
+            }
+            guard let computeEncoder = cmdBuffer.makeComputeCommandEncoder() else {
+                return
+            }
             // Convert YUV to RGB because the guided filter needs RGB format.
             computeEncoder.setComputePipelineState(pipelineStateCompute!)
             computeEncoder.setTexture(colorYContent.texture, index: 0)
@@ -208,6 +252,37 @@ final class ARProvider: ARDataReceiver {
             // Override the original depth texture with the upscaled version.
             depthContent.texture = destDepthTexture
         }
+
+        // TODO
+
+
+        let ciimage = CIImage(cvPixelBuffer: lastArData!.depthSmoothImage!) // depth cvPixelBuffer
+//        let cgimage = CGImage() // depth cvPixelBuffer
+//        print(ciimage.colorSpace)
+//        let depthUIImage = UIImage(ciImage: ciimage)
+
+//        let context:CIContext = CIContext.init(options: nil)
+//        let cgImage:CGImage = context.createCGImage(ciimage, from: ciimage.extent)!
+//        let image:UIImage = UIImage.init(cgImage: cgImage)\
+
+//        let image = normalize(image: cgImage)!
+
+//        let filter = CIFilter(name: "CIColorControls")
+//        filter?.setValue(ciimage, forKey: kCIInputImageKey)
+//        filter?.setValue(0, forKey: kCIInputBrightnessKey)
+//        let outputImage = filter?.outputImage!
+
+        let depthUIImage = UIImage(ciImage: ciimage)
+//        socket.write(data: image.pngData() ?? Data())
+//        socket.write(data: depthUIImage.jpegData(compressionQuality: 0.3) ?? Data())
+//        socket.write(data: depthUIImage.jpegData(compressionQuality: 1.0) ?? Data())
+//            socket.write(data: depthUIImage.pngData() ?? Data())
+//        print(depthUIImage.size)
+
+//        i += 1
     }
+
 }
+
+
 

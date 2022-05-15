@@ -9,6 +9,14 @@ import Foundation
 import SwiftUI
 import MetalKit
 import Metal
+import Foundation
+import SwiftUI
+import Combine
+import ARKit
+import Network
+import Accelerate
+import MobileCoreServices
+import MetalPerformanceShaders
 
 // Display `MTLTextures` in an `MTKView` using SwiftUI.
 //- Tag: MTKCoordinator`

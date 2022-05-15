@@ -16,6 +16,7 @@ struct Texture<T: View>: ViewModifier {
     let width: CGFloat
     let title: String
     let view: T
+
     func body(content: Content) -> some View {
         VStack {
             Text(title).foregroundColor(Color.red)
@@ -36,6 +37,7 @@ extension View {
         modifier(Texture(height: height, width: width, title: title, view: self))
     }
 }
+
 extension Image {
     init(_ texture: MTLTexture, ciContext: CIContext, scale: CGFloat, orientation: Image.Orientation, label: Text) {
         let ciimage = CIImage(mtlTexture: texture)!
@@ -43,9 +45,9 @@ extension Image {
         self.init(cgimage!, scale: 1.0, orientation: .leftMirrored, label: label)
     }
 }
+
 //- Tag: MetalDepthView
 struct MetalDepthView: View {
-
     // Set the default sizes for the texture views.
     let sizeH: CGFloat = 256
     let sizeW: CGFloat = 192
@@ -136,10 +138,12 @@ struct MetalDepthView: View {
 //                        Spacer()
                     }
                 }
-            }.navigationViewStyle(StackNavigationViewStyle())
+            }
+                    .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }
+
 struct MtkView_Previews: PreviewProvider {
     static var previews: some View {
         Group {

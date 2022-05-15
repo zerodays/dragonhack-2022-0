@@ -13,7 +13,6 @@ import SwiftUI
 import Combine
 import ARKit
 import Network
-import Starscream
 import Accelerate
 import MobileCoreServices
 import MetalPerformanceShaders
@@ -40,7 +39,6 @@ final class CoordinatorPointCloud: MTKCoordinator {
     @Binding var scaleMovement: Float
     var staticAngle: Float = 0.0
     var staticInc: Float = 0.02
-    var socket: WebSocket
 
 
     enum CameraModes {
@@ -55,11 +53,6 @@ final class CoordinatorPointCloud: MTKCoordinator {
         self.currentCameraMode = .sidewaysMovement
         self._confSelection = confSelection
         self._scaleMovement = scaleMovement
-
-        var request = URLRequest(url: URL(string: "http://88.200.36.202:6969")!)
-        request.timeoutInterval = 5
-        socket = WebSocket(request: request)
-        socket.connect()
 
         super.init(content: arData.depthContent, view: mtkView)
     }
@@ -160,56 +153,8 @@ final class CoordinatorPointCloud: MTKCoordinator {
         vImagePermuteChannels_ARGB8888(&sourceBuffer, &destBuffer, &swizzleMask, vImage_Flags(kvImageNoFlags))
     }
 
-    func pixelValues(fromCGImage imageRef: CGImage?) -> [UInt8]? {
-        var width = 0
-        var height = 0
-        var pixelValues: [UInt8]?
-
-        if let imageRef = imageRef {
-            width = imageRef.width
-            height = imageRef.height
-            let bitsPerComponent = imageRef.bitsPerComponent
-            let bytesPerRow = imageRef.bytesPerRow
-            let totalBytes = height * bytesPerRow
-            let bitmapInfo = imageRef.bitmapInfo
-
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            var intensities = [UInt8](repeating: 0, count: totalBytes)
-
-            let contextRef = CGContext(data: &intensities,
-                    width: width,
-                    height: height,
-                    bitsPerComponent: bitsPerComponent,
-                    bytesPerRow: bytesPerRow,
-                    space: colorSpace,
-                    bitmapInfo: bitmapInfo.rawValue)
-            contextRef?.draw(imageRef, in: CGRect(x: 0.0, y: 0.0, width: CGFloat(width), height: CGFloat(height)))
-
-            pixelValues = intensities
-        }
-
-        return pixelValues
-    }
-
-    var i = 0
-
     override func draw(in view: MTKView) {
         content = arData.depthContent
-        if (arData.lastArData != nil && arData.lastArData?.depthSmoothImage != nil && i % 3 == 0) {
-            guard let lastArData = arData.lastArData else {
-                fatalError("guard failure handling has not been implemented")
-            }
-
-            let ciimage = CIImage(cvPixelBuffer: lastArData.depthSmoothImage!) // depth cvPixelBuffer
-            let depthUIImage = UIImage(ciImage: ciimage)
-//            print(depthUIImage.pngData()?.count)
-//            sendMSG(msg: depthUIImage.pngData() ?? Data())
-            socket.write(data: depthUIImage.jpegData(compressionQuality: 0.5) ?? Data())
-//            socket.write(data: depthUIImage.pngData() ?? Data())
-            print(depthUIImage.size)
-        }
-
-        i += 1
 
         let confidence = (arData.isToUpsampleDepth) ? arData.upscaledConfidence : arData.confidenceContent
         guard arData.lastArData != nil else {
