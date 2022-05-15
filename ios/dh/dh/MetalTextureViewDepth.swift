@@ -26,7 +26,7 @@ final class CoordinatorDepth: MTKCoordinator {
 
     init(mtkView: MTKView, depthContent: MetalTextureContent, confSelection: Binding<Int>) {
         self._confSelection = confSelection
-        var request = URLRequest(url: URL(string: "http://192.168.46.77:6969")!)
+        var request = URLRequest(url: URL(string: "http://192.168.46.124:6969")!)
         request.timeoutInterval = 5
         socket = WebSocket(request: request)
         socket.connect()

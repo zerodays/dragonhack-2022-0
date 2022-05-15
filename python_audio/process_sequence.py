@@ -54,11 +54,11 @@ def process_frame(img, tla):
     valley_value = abs(blurred[valley[0], valley[1]]) / 255
 
 
-    if not valley_value < THRESHOLD:
-        img_negative = cv2.circle(img_negative, valley[::-1], radius=5, color=(0, 0, 255), thickness=2)
+    # if not valley_value < THRESHOLD:
+    #     img_negative = cv2.circle(img_negative, valley[::-1], radius=5, color=(0, 0, 255), thickness=2)
     
-    cv2.imshow('processed', img_negative.astype(np.uint8))
-    k = cv2.waitKey(10)
+    # cv2.imshow('processed', img_negative.astype(np.uint8))
+    # k = cv2.waitKey(10)
 
 
     if not peak_value < THRESHOLD:

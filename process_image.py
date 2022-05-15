@@ -46,17 +46,17 @@ while True:
             white_confidence -= 0.2
             white_confidence *= 1/0.7
             white_confidence = max(0, min(1, white_confidence))
-            za_utisat = (1 - white_confidence) * 20
+            za_utisat = (1 - white_confidence) ** 2 * 20
 
             if white_confidence > 0:
                 s = sounds[y][x]
-                s -= za_utisat
+                s -= za_utisat + 5
                 Thread(target=lambda: play(s)).start()
                 time.sleep(0.01)
 
         px, py = peak
         px -= image.shape[1] // 2
-        py -= image.shape[0] // 2
+        # py -= image.shape[0] // 2
 
 
         # Message for server
@@ -65,11 +65,11 @@ while True:
         img_str = b64encode(buffered.getvalue())
         message = json.dumps({
             'image': img_str.decode('utf-8'),
-            'angle': atan2(py, px),
+            'angle': -atan2(py, px) + np.pi / 2,
             'intensity': white_confidence
         })
 
-        # print('|||', b64encode(message.encode('utf-8')).decode('utf-8'))
+        print('|||', b64encode(message.encode('utf-8')).decode('utf-8'))
 
 
 cv2.destroyAllWindows()
