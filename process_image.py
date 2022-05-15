@@ -23,6 +23,8 @@ tla = read_sequence.read_sequence("tla").__next__()
 
 sounds = process_sequence.read_sounds()
 
+stairs_sound = process_sequence.get_stairs_sound()
+
 while True:
     message = input()    
     
@@ -35,17 +37,22 @@ while True:
 
         image = read_sequence.read_image(message)
 
-        (x, y), white_confidence, img_displ, peak = process_sequence.process_frame(image, tla)
-        white_confidence -= 0.2
-        white_confidence *= 1/0.7
-        white_confidence = max(0, min(1, white_confidence))
-        za_utisat = (1 - white_confidence) * 20
-
-        if white_confidence > 0:
-            s = sounds[y][x]
-            s -= za_utisat
+        (x, y), white_confidence, img_displ, peak, valley_confidence = process_sequence.process_frame(image, tla)
+        if valley_confidence > 0:
+            s = stairs_sound
             Thread(target=lambda: play(s)).start()
             time.sleep(0.01)
+        else:
+            white_confidence -= 0.2
+            white_confidence *= 1/0.7
+            white_confidence = max(0, min(1, white_confidence))
+            za_utisat = (1 - white_confidence) * 20
+
+            if white_confidence > 0:
+                s = sounds[y][x]
+                s -= za_utisat
+                Thread(target=lambda: play(s)).start()
+                time.sleep(0.01)
 
         px, py = peak
         px -= image.shape[1] // 2
@@ -58,11 +65,11 @@ while True:
         img_str = b64encode(buffered.getvalue())
         message = json.dumps({
             'image': img_str.decode('utf-8'),
-            'angle': atan2(y, x),
+            'angle': atan2(py, px),
             'intensity': white_confidence
         })
 
-        print('|||', b64encode(message.encode('utf-8')).decode('utf-8'))
+        # print('|||', b64encode(message.encode('utf-8')).decode('utf-8'))
 
 
 cv2.destroyAllWindows()
